@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzzy Name Matching Tool - Visual Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            padding: 30px; 
+            background: #f0f4f8; 
+            font-family: 'Oswald', Arial, sans-serif; 
+            color: #000; 
+        }
+        
+        .page-container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { 
+            background: #004080; 
+            color: white; 
+            padding: 25px; 
+            text-align: center; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+        }
+        .header h1 { font-size: 28px; letter-spacing: 2px; }
+        .header p { font-size: 14px; margin-top: 8px; opacity: 0.9; }
+        
+        .tool-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tool-title {
+            background: #004080;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .workflow {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .step-box {
+            text-align: center;
+        }
+        
+        .step-label {
+            background: #004080;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .file-box {
+            background: #fff;
+            border: 3px solid #004080;
+            border-radius: 10px;
+            padding: 15px;
+            width: 200px;
+            margin-bottom: 8px;
+        }
+        
+        .file-box.shapefile { border-color: #17a2b8; }
+        .file-box.excel { border-color: #28a745; }
+        .file-box.duplicate { 
+            border-color: #ffc107; 
+            background: linear-gradient(135deg, #fffef0 0%, #fff9e6 100%);
+        }
+        .file-box.match { 
+            border-color: #6f42c1; 
+            background: linear-gradient(135deg, #f8f4ff 0%, #efe6ff 100%);
+        }
+        .file-box.output { 
+            border-color: #28a745; 
+            background: linear-gradient(135deg, #f0fff4 0%, #e8f5e9 100%);
+        }
+        
+        .file-icon {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .file-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #004080;
+            margin-bottom: 5px;
+        }
+        
+        .file-box.shapefile .file-name { color: #17a2b8; }
+        .file-box.excel .file-name { color: #28a745; }
+        .file-box.duplicate .file-name { color: #856404; }
+        .file-box.match .file-name { color: #6f42c1; }
+        .file-box.output .file-name { color: #155724; }
+        
+        .file-desc {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .step-desc {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            max-width: 200px;
+        }
+        
+        .arrow {
+            font-size: 28px;
+            color: #004080;
+            font-weight: 700;
+            margin-top: 50px;
+        }
+        
+        .dual-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .data-preview {
+            background: #1e1e1e;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 8px;
+            color: #9cdcfe;
+            line-height: 1.4;
+            margin-top: 8px;
+        }
+        
+        .data-preview .header-row { color: #569cd6; font-weight: bold; }
+        .data-preview .shp-text { color: #17a2b8; }
+        .data-preview .xl-text { color: #28a745; }
+        .data-preview .dup { color: #f48771; }
+        .data-preview .ok { color: #b5cea8; }
+        
+        .dup-visual {
+            margin-top: 10px;
+        }
+        
+        .dup-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9px;
+            padding: 4px 6px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        
+        .dup-row.error { background: #f8d7da; }
+        .dup-row.fixed { background: #d4edda; }
+        
+        .dup-badge {
+            font-size: 7px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+        
+        .dup-badge.dup { background: #dc3545; color: white; }
+        .dup-badge.ok { background: #28a745; color: white; }
+        
+        .match-visual {
+            margin-top: 10px;
+        }
+        
+        .match-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 8px;
+            padding: 4px 6px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        
+        .match-row.high { background: #d4edda; }
+        .match-row.medium { background: #fff3cd; }
+        .match-row.low { background: #f8d7da; }
+        
+        .match-arrow {
+            color: #004080;
+            font-weight: bold;
+        }
+        
+        .match-score {
+            font-weight: 700;
+            font-size: 7px;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .match-score.high { background: #28a745; color: white; }
+        .match-score.medium { background: #ffc107; color: #000; }
+        .match-score.low { background: #dc3545; color: white; }
+        
+        .threshold-visual {
+            margin: 8px 0;
+            text-align: center;
+        }
+        
+        .threshold-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            border-radius: 3px;
+            position: relative;
+            margin: 6px 0;
+        }
+        
+        .threshold-marker {
+            position: absolute;
+            top: -3px;
+            left: 70%;
+            width: 12px;
+            height: 12px;
+            background: #004080;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .stats-mini {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        
+        .stat-box {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            padding: 6px 8px;
+            text-align: center;
+            min-width: 50px;
+        }
+        
+        .stat-box.success { border-color: #28a745; }
+        .stat-box.warning { border-color: #ffc107; }
+        .stat-box.danger { border-color: #dc3545; }
+        
+        .stat-box .value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #004080;
+        }
+        
+        .stat-box.success .value { color: #28a745; }
+        .stat-box.warning .value { color: #856404; }
+        .stat-box.danger .value { color: #dc3545; }
+        
+        .stat-box .label {
+            font-size: 7px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .footer {
+            background: #004080;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px dashed #004080;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border: 2px solid #004080;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .info-box h4 {
+            color: #004080;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .info-box p {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .process-list {
+            margin-top: 15px;
+        }
+        
+        .process-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .process-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .process-icon.upload { background: #e7f3ff; }
+        .process-icon.check { background: #fff3cd; }
+        .process-icon.match { background: #efe6ff; }
+        .process-icon.download { background: #d4edda; }
+        
+        .process-details {
+            font-size: 11px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .process-details strong {
+            color: #004080;
+        }
+        
+        .feature-list {
+            margin-top: 15px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        
+        .feature-item svg {
+            flex-shrink: 0;
+        }
+        
+        .algorithm-box {
+            background: #e7f3ff;
+            border: 2px solid #004080;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .algorithm-box h5 {
+            color: #004080;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .algorithm-box p {
+            font-size: 10px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 1000px) {
+            .workflow {
+                flex-direction: column;
+                align-items: center;
+            }
+            .arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+            .info-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>FUZZY NAME MATCHING TOOL</h1>
+            <p>Check Duplicates, Correct Names & Standardize Shapefiles</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="tool-title">MATCHING WORKFLOW</div>
+            
+            <div class="workflow">
+                <!-- Input: Two Files -->
+                <div class="step-box">
+                    <div class="step-label">STEP 1: UPLOAD</div>
+                    <div class="dual-input">
+                        <div class="file-box shapefile">
+                            <div class="file-icon">
+                                <svg width="35" height="35" viewBox="0 0 35 35">
+                                    <polygon points="17.5,3 32,12 32,28 17.5,32 3,28 3,12" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+                                    <polygon points="17.5,8 26,14 26,24 17.5,27 9,24 9,14" fill="none" stroke="#17a2b8" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="file-name">Shapefile (Source)</div>
+                            <div class="file-desc">Names to standardize</div>
+                            <div class="data-preview">
+                                <span class="header-row">chiefdom</span><br>
+                                <span class="shp-text">Koya Rural</span><br>
+                                <span class="shp-text">Koya rural</span><br>
+                                <span class="shp-text">Waterlo</span>
+                            </div>
+                        </div>
+                        <div class="file-box excel">
+                            <div class="file-icon">
+                                <svg width="35" height="35" viewBox="0 0 35 35">
+                                    <rect x="5" y="3" width="25" height="29" rx="2" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+                                    <line x1="10" y1="10" x2="25" y2="10" stroke="#28a745" stroke-width="2"/>
+                                    <line x1="10" y1="16" x2="25" y2="16" stroke="#28a745" stroke-width="2"/>
+                                    <line x1="10" y1="22" x2="25" y2="22" stroke="#28a745" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="file-name">Excel (Reference)</div>
+                            <div class="file-desc">Standard names</div>
+                            <div class="data-preview">
+                                <span class="header-row">standard_name</span><br>
+                                <span class="xl-text">Koya Rural</span><br>
+                                <span class="xl-text">Waterloo</span><br>
+                                <span class="xl-text">York Rural</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-desc">Upload both files</div>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <!-- Check Duplicates -->
+                <div class="step-box">
+                    <div class="step-label">STEP 2: CHECK DUPLICATES</div>
+                    <div class="file-box duplicate">
+                        <div class="file-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <circle cx="20" cy="20" r="15" fill="none" stroke="#ffc107" stroke-width="3"/>
+                                <line x1="20" y1="10" x2="20" y2="22" stroke="#856404" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="20" cy="28" r="2" fill="#856404"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">Find Duplicates</div>
+                        <div class="file-desc">Edit row by row</div>
+                        
+                        <div class="dup-visual">
+                            <div class="dup-row error">
+                                <span>Row 1:</span>
+                                <span style="color:#dc3545;">Koya Rural</span>
+                                <span class="dup-badge dup">DUP</span>
+                            </div>
+                            <div class="dup-row error">
+                                <span>Row 2:</span>
+                                <span style="color:#dc3545;">Koya rural</span>
+                                <span class="dup-badge dup">DUP</span>
+                            </div>
+                            <div class="dup-row fixed">
+                                <span>Row 2:</span>
+                                <span style="color:#28a745;">Koya Rural 2</span>
+                                <span class="dup-badge ok">OK</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-desc">Fix duplicates before matching</div>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <!-- Fuzzy Match -->
+                <div class="step-box">
+                    <div class="step-label">STEP 3: FUZZY MATCH</div>
+                    <div class="file-box match">
+                        <div class="file-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <circle cx="15" cy="20" r="10" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+                                <circle cx="25" cy="20" r="10" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+                                <path d="M20 12 L20 28" stroke="#6f42c1" stroke-width="2" stroke-dasharray="3,2"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">Compare Names</div>
+                        <div class="file-desc">Set threshold & match</div>
+                        
+                        <div class="threshold-visual">
+                            <div class="threshold-bar">
+                                <div class="threshold-marker"></div>
+                            </div>
+                            <div style="font-size: 8px; color: #666;">Threshold: 70%</div>
+                        </div>
+                        
+                        <div class="match-visual">
+                            <div class="match-row high">
+                                <span>Koya Rural</span>
+                                <span class="match-arrow">→</span>
+                                <span>Koya Rural</span>
+                                <span class="match-score high">100%</span>
+                            </div>
+                            <div class="match-row medium">
+                                <span>Waterlo</span>
+                                <span class="match-arrow">→</span>
+                                <span>Waterloo</span>
+                                <span class="match-score medium">88%</span>
+                            </div>
+                            <div class="match-row low">
+                                <span>Yoni</span>
+                                <span class="match-arrow">→</span>
+                                <span>—</span>
+                                <span class="match-score low">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-desc">Review & adjust matches</div>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <!-- Output -->
+                <div class="step-box">
+                    <div class="step-label">STEP 4: DOWNLOAD</div>
+                    <div class="file-box output">
+                        <div class="file-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <circle cx="20" cy="20" r="16" fill="#28a745"/>
+                                <polyline points="12,20 18,26 28,14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">Standardized Shapefile</div>
+                        <div class="file-desc">Download .zip</div>
+                        
+                        <div class="stats-mini">
+                            <div class="stat-box success">
+                                <div class="value">15</div>
+                                <div class="label">Exact</div>
+                            </div>
+                            <div class="stat-box warning">
+                                <div class="value">8</div>
+                                <div class="label">Fuzzy</div>
+                            </div>
+                            <div class="stat-box danger">
+                                <div class="value">1</div>
+                                <div class="label">None</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 10px; font-size: 9px; color: #155724;">
+                            <svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align: middle;">
+                                <rect x="1" y="1" width="10" height="10" rx="1" fill="#28a745"/>
+                                <polyline points="3,6 5,8 9,4" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            Names corrected & standardized
+                        </div>
+                    </div>
+                    <div class="step-desc">Ready for GIS use</div>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="info-section">
+                <div class="info-box">
+                    <h4>How It Works</h4>
+                    <p>The tool helps standardize shapefile attribute names by matching them against a reference Excel file with correct spellings.</p>
+                    
+                    <div class="process-list">
+                        <div class="process-item">
+                            <div class="process-icon upload">
+                                <svg width="14" height="14" viewBox="0 0 14 14">
+                                    <path d="M7 2 L7 10 M4 5 L7 2 L10 5" fill="none" stroke="#004080" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="process-details">
+                                <strong>Upload Both Files</strong><br>
+                                Shapefile (.zip) with names to fix and Excel with correct standard names
+                            </div>
+                        </div>
+                        <div class="process-item">
+                            <div class="process-icon check">
+                                <svg width="14" height="14" viewBox="0 0 14 14">
+                                    <circle cx="7" cy="7" r="5" fill="none" stroke="#856404" stroke-width="2"/>
+                                    <line x1="7" y1="4" x2="7" y2="7" stroke="#856404" stroke-width="1.5"/>
+                                    <circle cx="7" cy="9" r="1" fill="#856404"/>
+                                </svg>
+                            </div>
+                            <div class="process-details">
+                                <strong>Check Duplicates</strong><br>
+                                Detect and fix duplicate values in both files before matching
+                            </div>
+                        </div>
+                        <div class="process-item">
+                            <div class="process-icon match">
+                                <svg width="14" height="14" viewBox="0 0 14 14">
+                                    <circle cx="5" cy="7" r="4" fill="none" stroke="#6f42c1" stroke-width="1.5"/>
+                                    <circle cx="9" cy="7" r="4" fill="none" stroke="#6f42c1" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="process-details">
+                                <strong>Fuzzy Matching</strong><br>
+                                Algorithm finds best match even with typos or variations
+                            </div>
+                        </div>
+                        <div class="process-item">
+                            <div class="process-icon download">
+                                <svg width="14" height="14" viewBox="0 0 14 14">
+                                    <path d="M7 2 L7 10 M4 7 L7 10 L10 7" fill="none" stroke="#155724" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="3" y1="12" x2="11" y2="12" stroke="#155724" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="process-details">
+                                <strong>Download Shapefile</strong><br>
+                                Get standardized shapefile with corrected names
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h4>Key Features</h4>
+                    
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                <circle cx="7" cy="7" r="5" fill="#28a745"/>
+                                <polyline points="4,7 6,9 10,5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Case-insensitive</strong> - "FREETOWN" = "Freetown"</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                <circle cx="7" cy="7" r="5" fill="#28a745"/>
+                                <polyline points="4,7 6,9 10,5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Duplicate detection</strong> - Find & fix before matching</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                <circle cx="7" cy="7" r="5" fill="#28a745"/>
+                                <polyline points="4,7 6,9 10,5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Adjustable threshold</strong> - 50% to 100%</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                <circle cx="7" cy="7" r="5" fill="#28a745"/>
+                                <polyline points="4,7 6,9 10,5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Manual override</strong> - Change any match</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                <circle cx="7" cy="7" r="5" fill="#28a745"/>
+                                <polyline points="4,7 6,9 10,5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Row-by-row editing</strong> - Fix individual duplicates</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                <circle cx="7" cy="7" r="5" fill="#28a745"/>
+                                <polyline points="4,7 6,9 10,5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Download options</strong> - Corrected or standardized</span>
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-box">
+                        <h5>Levenshtein Distance Algorithm</h5>
+                        <p>Calculates the minimum number of single-character edits (insertions, deletions, substitutions) needed to change one string into another. The similarity score is computed as:</p>
+                        <p style="text-align: center; margin-top: 8px; font-family: 'Courier New', monospace; font-weight: 700;">
+                            Score = (maxLength - distance) / maxLength
+                        </p>
+                        
+                        <div style="margin-top: 12px; padding: 10px; background: #fff; border-radius: 6px; border: 1px solid #004080;">
+                            <p style="font-weight: 700; color: #004080; margin-bottom: 6px;">Example: "Waterlo" → "Waterloo"</p>
+                            <table style="width: 100%; font-size: 10px; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd;"><strong>Source:</strong></td>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd; font-family: 'Courier New', monospace;">W-a-t-e-r-l-o</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd;">(7 characters)</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd;"><strong>Standard:</strong></td>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd; font-family: 'Courier New', monospace;">W-a-t-e-r-l-o-o</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd;">(8 characters)</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd;"><strong>Edit needed:</strong></td>
+                                    <td style="padding: 4px; border-bottom: 1px solid #ddd;" colspan="2">Insert 1 letter "o" → Distance = <strong>1</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px;"><strong>Score:</strong></td>
+                                    <td style="padding: 4px; font-family: 'Courier New', monospace;" colspan="2">(8 - 1) / 8 = 7/8 = <strong style="color: #28a745;">87.5%</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>Informatics Consultancy Firm-Sierra Leone (ICF-SL)</strong><br>
+            <span style="font-size: 11px; opacity: 0.8;">Driving Data-Driven Solutions for Health and Development</span>
+        </div>
+    </div>
+</body>
+</html>
